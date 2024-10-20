@@ -1,16 +1,27 @@
-# Build stage using Maven with OpenJDK 17
-FROM maven:3.8.6-openjdk-17 AS build
+# Use Maven with OpenJDK 17 (Eclipse Temurin distribution)
+FROM maven:3.8.6-eclipse-temurin-17 AS build
 
 WORKDIR /app
 
-COPY . .
-RUN mvn clean package -DskipTests
+# Copy pom.xml and source code
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-# Run stage
-FROM openjdk:17-jdk-slim
+COPY src ./src
+
+# Build the application
+RUN mvn clean package
+
+# Use a lightweight JDK image to run the application
+FROM eclipse-temurin:17-jre-alpine
+
 WORKDIR /app
 
-COPY --from=build /app/target/DrComputer-0.0.1-SNAPSHOT.war drcomputer.war
+# Copy the built jar from the build stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose the port
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "drcomputer.war"]
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
