@@ -1,5 +1,8 @@
-# Build stage
-FROM maven:3.8.6-openjdk-21-slim AS build
+# Using the latest version of Maven with OpenJDK 21
+FROM maven:3.9.0-openjdk-21 AS build
+
+# OR using a specific tag with a supported version
+FROM maven:3.8.6-jdk-slim AS build
 
 WORKDIR /app
 
