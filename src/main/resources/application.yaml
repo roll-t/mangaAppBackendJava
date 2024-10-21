@@ -1,8 +1,15 @@
+#spring:
+#  datasource:
+#    url: ${DBMS_CONNECTION:jdbc:mysql://localhost:3306/quest_db}
+#    username: ${DBMS_USERNAME:root}
+#    password: ${DBMS_PASSWORD:root}
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+
 spring:
   datasource:
-    url: ${DBMS_CONNECTION:jdbc:mysql://localhost:3306/quest_db}
-    username: ${DBMS_USERNAME:root}
-    password: ${DBMS_PASSWORD:root}
+    url: jdbc:mysql://sql100.infinityfree.com:3306/if0_37560179_reading?useSSL=false
+    username: if0_37560179
+    password: 11172002dZ
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
