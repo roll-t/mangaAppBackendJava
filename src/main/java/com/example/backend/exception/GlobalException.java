@@ -36,15 +36,17 @@ public class GlobalException {
     public ResponseEntity<ApiResponse> handlingValidException(MethodArgumentNotValidException exception) {
         String enumKey = exception.getFieldError().getDefaultMessage();
         ErrorCode errorCode = ErrorCode.INVALID_ID_KEY;
-        Map<String,Object> attributes = null;
+        Map<String, Object> attributes = null;
         try {
             errorCode = ErrorCode.valueOf(enumKey);
 
-            // handling app exception validation
-            var constraintViolations = exception.getBindingResult()
-                    .getAllErrors()
-                    .getFirst().unwrap(ConstraintViolation.class);
-            attributes = constraintViolations.getConstraintDescriptor().getAttributes();
+            if (!exception.getBindingResult().getAllErrors().isEmpty()) {
+                var constraintViolations = exception.getBindingResult()
+                        .getAllErrors()
+                        .get(0).unwrap(ConstraintViolation.class);
+                attributes = constraintViolations.getConstraintDescriptor().getAttributes();
+            }
+
 
             log.info(attributes.toString());
 
@@ -54,9 +56,9 @@ public class GlobalException {
 
         ApiResponse apiResponse = ApiResponse.builder()
                 .code(errorCode.getCode())
-                .message(Objects.nonNull(attributes)?
-                        mapAttribute(errorCode.getMessage(),attributes)
-                        :errorCode.getMessage()
+                .message(Objects.nonNull(attributes) ?
+                        mapAttribute(errorCode.getMessage(), attributes)
+                        : errorCode.getMessage()
 
                 )
                 .build();

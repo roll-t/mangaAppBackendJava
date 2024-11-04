@@ -109,6 +109,7 @@ public class UserService {
 //    @PostAuthorize("returnObject.email==authentication.name")// vào chạy method rồi mới kiểm tra
     public UserResponse getUserById(String id) {
         log.info("in method get user by id");
+        System.out.print(userMapper.toUserResponse(userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"))));
         return userMapper.toUserResponse(userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found")));
     }
 

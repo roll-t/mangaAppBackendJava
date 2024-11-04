@@ -30,6 +30,7 @@ public class SecurityConfig {
             "/users/{uid}",
             "/users/email-exist/{email}",
             "/auth/token",
+            "/category/{categorySlug}",
             "/auth/introspect",
             "/auth/logout",
             "/auth/refresh",
