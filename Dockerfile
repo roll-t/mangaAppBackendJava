@@ -1,26 +1,30 @@
-# Build stage
-FROM maven:3.8.6-openjdk-21 AS build
+# Use Maven with OpenJDK 17 (Eclipse Temurin distribution) for the build stage
+FROM maven:3.8.6-eclipse-temurin-17 AS build
 
 # Set the working directory
 WORKDIR /app
 
-# Copy all files from the current directory to the working directory in the image
-COPY . .
+# Copy pom.xml and source code
+COPY pom.xml ./
+RUN mvn dependency:go-offline
 
-# Build the project and skip tests
+# Copy the source code
+COPY src ./src
+
+# Build the application
 RUN mvn clean package -DskipTests
 
-# Run stage
-FROM openjdk:21-jdk-slim
+# Use a lightweight JDK image (Eclipse Temurin) to run the application
+FROM eclipse-temurin:17-jre-alpine
 
 # Set the working directory for the runtime container
 WORKDIR /app
 
-# Copy the WAR file from the build stage to the runtime stage
-COPY --from=build /app/target/DrComputer-0.0.1-SNAPSHOT.war drcomputer.war
+# Copy the built jar from the build stage
+COPY --from=build /app/target/*.jar app.jar
 
 # Expose the application on port 8080
 EXPOSE 8080
 
-# Set the command to run the application
-ENTRYPOINT ["java", "-jar", "drcomputer.war"]
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
