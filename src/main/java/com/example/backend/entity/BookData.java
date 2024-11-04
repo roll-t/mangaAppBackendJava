@@ -25,6 +25,10 @@ public class BookData {
     String thumbUrl;
     boolean subDocQuyen;
 
+    // tạo quan hệ với bản comment
+    @OneToMany(mappedBy = "bookData", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Comment> comments;
+
     // Many-to-Many relationship with Category
     @ManyToMany
     @JoinTable(

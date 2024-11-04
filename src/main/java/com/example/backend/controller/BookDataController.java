@@ -24,6 +24,7 @@ import java.util.List;
 @Data
 @CrossOrigin(origins = "http://localhost:3000")
 public class BookDataController {
+
     BookDataService bookDataService;
 
     @GetMapping
@@ -66,13 +67,7 @@ public class BookDataController {
             return ApiResponse.<Boolean>builder().result(false).build();
         }
     }
-
-    @GetMapping("/category/{categoryId}")
-    public ApiResponse<List<BookDataResponse>> getBooksByCategory(@PathVariable("categoryId") Integer categoryId) {
-        List<BookDataResponse> books = bookDataService.findByCategory(categoryId);
-        return ApiResponse.<List<BookDataResponse>>builder().result(books).build();
-    }
-
+    
     @GetMapping("/status/{statusName}")
     public ApiResponse<List<BookDataResponse>> getBooksByStatus(@PathVariable("statusName") String status) {
         List<BookDataResponse> books = bookDataService.findByStatus(status);
@@ -98,8 +93,8 @@ public class BookDataController {
         return ApiResponse.<List<BookDataResponse>>builder().result(books).build();
     }
 
-    @GetMapping("/search/text")
-    public ApiResponse<List<BookDataResponse>> searchBookByNameOrSlug(@RequestParam("text") String text) {
+    @GetMapping("/search/{text}")
+    public ApiResponse<List<BookDataResponse>> searchBookByNameOrSlug(@PathVariable("text") String text) {
         List<BookDataResponse> books = bookDataService.searchByNameOrSlug(text);
         return ApiResponse.<List<BookDataResponse>>builder().result(books).build();
     }
@@ -115,11 +110,21 @@ public class BookDataController {
         List<BookDataResponse> books = bookDataService.findByNames(names);
         return ApiResponse.<List<BookDataResponse>>builder().result(books).build();
     }
+    @GetMapping("/category/{categorySlug}/status/{statusName}")
+    public ApiResponse<List<BookDataResponse>> getBooksByCategoryAndStatus(
+            @PathVariable("categorySlug") String categorySlug,
+            @PathVariable("statusName") String status,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        System.out.print("================================================================");
+        List<BookDataResponse> books = bookDataService.findByCategoryAndStatus(categorySlug, status, page, size);
+        return ApiResponse.<List<BookDataResponse>>builder().result(books).build();
+    }
+
 
     @GetMapping("/slugs")
     public ApiResponse<List<BookDataResponse>> getBooksBySlugs(@RequestParam List<String> slugs) {
         List<BookDataResponse> books = bookDataService.findBySlugs(slugs);
-        System.out.print(books);
         return ApiResponse.<List<BookDataResponse>>builder().result(books).build();
     }
 

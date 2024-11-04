@@ -60,8 +60,9 @@ public class BookCaseService {
 
     public List<ReadingBookCaseResponse> getAllReadingBooksByUserId(String userId) {
         List<ReadingBookCase> readingBooks = readingBookCaseRepository.findByUser_Uid(userId);
+        // Map without including comments
         return readingBooks.stream()
-                .map(readingBookCaseMapper::toReadingBookCaseResponse)
+                .map(readingBookCaseMapper::toReadingBookCaseResponseWithoutComments) // Use the MapStruct method
                 .collect(Collectors.toList());
     }
 

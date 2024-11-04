@@ -13,6 +13,8 @@ import java.util.List;
 public interface UserMapper {
 
 
+    @Mapping(target = "books", ignore = true)
+    @Mapping(target = "comments", ignore = true)
     @Mapping(target = "uid", source = "uid")
     @Mapping(target = "roles", ignore = true)
     User toUser(UserCreationRequest request);

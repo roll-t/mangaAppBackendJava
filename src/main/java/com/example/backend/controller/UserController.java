@@ -57,6 +57,7 @@ public class UserController {
 
     @GetMapping("/{uid}")
     public ApiResponse<UserResponse> getUserById(@PathVariable("uid") String uid) {
+        System.out.print("=====================================================");
         return ApiResponse.<UserResponse>builder()
                 .result(userService.getUserById(uid))
                 .build();

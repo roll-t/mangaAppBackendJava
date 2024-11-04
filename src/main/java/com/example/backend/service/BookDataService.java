@@ -15,6 +15,8 @@ import com.example.backend.utils.StringUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -89,6 +91,20 @@ public class BookDataService {
         return bookDataMapper.toBookDataResponse(bookDataRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("BookData not found")));
     }
+
+    public List<BookDataResponse> findByCategoryAndStatus(String categorySlug, String status, int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size);
+        System.out.print(categorySlug);
+        System.out.print(status);
+//        System.out.print(categorySlug);
+        Page<BookData> bookDataPage = bookDataRepository.findByCategorySlugAndStatus(categorySlug, status, pageable);
+
+        // Convert BookData entities to BookDataResponse DTOs
+        return bookDataPage.stream()
+                .map(bookDataMapper::toBookDataResponse) // Use the mapper to convert each BookData
+                .collect(Collectors.toList());
+    }
+
 
     public List<BookDataResponse> findByStatus(String status) {
         return bookDataRepository.findAll().stream()
