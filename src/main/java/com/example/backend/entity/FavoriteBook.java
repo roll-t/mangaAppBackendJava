@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
-public class ReadingBookCase {
+public class  FavoriteBook {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -22,13 +22,11 @@ public class ReadingBookCase {
 
     @ManyToOne
     @JoinColumn(name = "book_data_id", referencedColumnName = "bookDataId", nullable = false)
-    BookData bookData;
+    BookData bookData;  // The book being liked
 
     @ManyToOne
     @JoinColumn(name = "uid", referencedColumnName = "uid", nullable = false)
-    User user;
+    User user;  // The user who liked the book
 
-    String chapterName;
-    LocalDateTime readingDate;
-    double positionReading;
+    LocalDateTime favoriteDate;  // Timestamp for when the book was liked
 }

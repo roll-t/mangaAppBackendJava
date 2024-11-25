@@ -5,7 +5,6 @@ import com.example.backend.dto.request.BookUpdateRequest;
 import com.example.backend.dto.response.BookDataResponse;
 import com.example.backend.entity.BookData;
 import com.example.backend.entity.Category;
-import com.example.backend.entity.Chapter;
 import com.example.backend.entity.User;
 import com.example.backend.mapper.BookDataMapper;
 import com.example.backend.repository.BookDataRepository;
@@ -17,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -33,9 +34,13 @@ public class BookDataService {
     CategoryRepository categoryRepository;
     UserRepository userRepository;
 
-    public List<BookDataResponse> getAll() {
-        return bookDataRepository.findAll().stream()
-                .filter(bookData -> !"CANCELLED".equalsIgnoreCase(bookData.getStatus()))
+    public List<BookDataResponse> getAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("createdAt")));
+        // Fetch paginated result from the repository
+        Page<BookData> bookDataPage = bookDataRepository.findAll(pageable);
+
+        return bookDataPage.stream()
+                .filter(bookData -> !bookData.getStatus().contains("CANCELLED"))
                 .sorted(Comparator.comparing(BookData::getCreatedAt).reversed())
                 .map(bookDataMapper::toBookDataResponse)
                 .collect(Collectors.toList());
@@ -56,14 +61,27 @@ public class BookDataService {
         return bookDataMapper.toBookDataResponse(bookData);
     }
 
+    public BookDataResponse addSliderToStatus(String bookId) {
+        BookData bookData = bookDataRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Book with ID " + bookId + " not found"));
+        // Check if "SLIDER" is not already part of the status
+        if (!bookData.getStatus().contains("SLIDER")) {
+            bookData.setStatus(bookData.getStatus() + " | SLIDER");
+            bookDataRepository.save(bookData); // Save the updated entity
+        }
+
+        return bookDataMapper.toBookDataResponse(bookData);
+    }
+
+
     public void delete(String id) {
         bookDataRepository.deleteById(id);
     }
 
     public void update(String id, BookUpdateRequest bookUpdateRequest) {
+
         BookData bookData = bookDataRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("BookData not found"));
-        System.out.println(bookData);
 
         bookDataMapper.updateBookDataFromRequest(bookData, bookUpdateRequest);
 
@@ -106,12 +124,13 @@ public class BookDataService {
     }
 
 
-    public List<BookDataResponse> findByStatus(String status) {
+    public List<BookDataResponse> findByStatus(String statuses) {
         return bookDataRepository.findAll().stream()
-                .filter(bookData -> status.equalsIgnoreCase(bookData.getStatus()))
+                .filter(bookData -> bookData.getStatus().contains(statuses))
                 .map(bookDataMapper::toBookDataResponse)
                 .collect(Collectors.toList());
     }
+
 
     public List<BookDataResponse> findByCategory(Integer categoryId) {
         Category category = categoryRepository.findById(categoryId)
@@ -122,6 +141,15 @@ public class BookDataService {
                 .collect(Collectors.toList());
     }
 
+    public BookDataResponse updateStatus(String bookId, String newStatus) {
+        BookData bookData = bookDataRepository.findById(bookId).orElseThrow(() -> new IllegalArgumentException("Book with ID " + bookId + " not found"));
+        if (!bookData.getStatus().contains(newStatus)) {
+            bookData.setStatus(bookData.getStatus() + " | " + newStatus);
+            bookData = bookDataRepository.save(bookData);
+        }
+        return bookDataMapper.toBookDataResponse(bookData);
+    }
+
     public List<BookDataResponse> findByCreationDateRange(LocalDateTime startDate, LocalDateTime endDate) {
         return bookDataRepository.findAll().stream()
                 .filter(bookData ->
@@ -129,6 +157,16 @@ public class BookDataService {
                                 bookData.getCreatedAt().isBefore(endDate))
                 .map(bookDataMapper::toBookDataResponse)
                 .collect(Collectors.toList());
+    }
+
+    public BookDataResponse removeStatusFromBook(String bookId, String statusToRemove) {
+        BookData bookData = bookDataRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Book with ID " + bookId + " not found"));
+        if (bookData.getStatus().contains(statusToRemove)) {
+            bookData.setStatus(bookData.getStatus().replace(" | " + statusToRemove, "").replace(statusToRemove + " | ", ""));
+            bookData = bookDataRepository.save(bookData);
+        }
+        return bookDataMapper.toBookDataResponse(bookData);
     }
 
     public List<BookDataResponse> findByUser(String userId) {
@@ -179,5 +217,58 @@ public class BookDataService {
                 .collect(Collectors.toList());
     }
 
+    // Tính phần trăm tăng trưởng sách trong tuần
+    public double calculateWeeklyGrowthPercentage() {
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+        long booksLastWeek = bookDataRepository.countByCreatedAtAfter(oneWeekAgo);
 
+        LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
+        long booksTwoWeeksAgo = bookDataRepository.countByCreatedAtAfter(twoWeeksAgo);
+
+        if (booksTwoWeeksAgo == 0) {
+            return 0;  // Nếu không có sách được tạo trong 2 tuần trước, tránh chia cho 0
+        }
+
+        return ((double) booksLastWeek - booksTwoWeeksAgo) / booksTwoWeeksAgo * 100;
+    }
+
+    // Tính phần trăm tăng trưởng sách trong tháng
+    public double calculateMonthlyGrowthPercentage() {
+        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+        long booksLastMonth = bookDataRepository.countByCreatedAtAfter(oneMonthAgo);
+
+        LocalDateTime twoMonthsAgo = LocalDateTime.now().minusMonths(2);
+        long booksTwoMonthsAgo = bookDataRepository.countByCreatedAtAfter(twoMonthsAgo);
+
+        if (booksTwoMonthsAgo == 0) {
+            return 0;  // Nếu không có sách được tạo trong 2 tháng trước, tránh chia cho 0
+        }
+
+        return ((double) booksLastMonth - booksTwoMonthsAgo) / booksTwoMonthsAgo * 100;
+    }
+
+
+    // Tính số sách được tạo trong tuần
+    public long getBooksCreatedThisWeek() {
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+        return bookDataRepository.countByCreatedAtAfter(oneWeekAgo);  // Đếm số sách được tạo trong tuần qua
+    }
+
+    // Tính tổng số sách
+    public long getTotalBooksCount() {
+        return bookDataRepository.count();  // Đếm tổng số sách trong cơ sở dữ liệu
+    }
+
+    // Tính phần trăm tăng trưởng sách trong tuần so với tổng số sách
+    public double calculateWeeklyGrowthPercentageOnBase() {
+        long totalBooks = getTotalBooksCount();  // Lấy tổng số sách
+        if (totalBooks == 0) {
+            return 0; // Tránh chia cho 0 nếu không có sách nào
+        }
+
+        long booksThisWeek = getBooksCreatedThisWeek();  // Lấy số sách tạo mới trong tuần
+
+        // Tính phần trăm tăng trưởng sách trong tuần so với tổng số sách
+        return ((double) booksThisWeek / totalBooks) * 100;
+    }
 }

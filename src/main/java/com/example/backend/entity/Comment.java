@@ -20,14 +20,19 @@ public class Comment {
     String commentId;
 
     @ManyToOne
-    @JoinColumn(name = "book_data_id", nullable = false)
-    BookData bookData; // Liên kết đến cuốn sách mà comment này thuộc về
+    @JoinColumn(name = "book_data_id", referencedColumnName = "bookDataId", nullable = false) // Đảm bảo tên cột chính xác
+    BookData bookData;
+
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    User user; // Người tạo comment
+    @JoinColumn(name = "chapter_id", referencedColumnName = "chapterId", nullable = true) // Nullable relationship to Chapter
+    Chapter chapter;
 
-    String content; // Nội dung của comment
+    @ManyToOne
+    @JoinColumn(name = "user_id",referencedColumnName = "uid", nullable = false)
+    User user;
+
+    String content;
 
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

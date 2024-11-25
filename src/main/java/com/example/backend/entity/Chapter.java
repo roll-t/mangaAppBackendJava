@@ -25,7 +25,8 @@ public class Chapter {
     String chapterContent;
 
     LocalDateTime createAt;
+
     @ManyToOne
-    @JoinColumn(name = "book_data_id", nullable = false)
+    @JoinColumn(name = "book_data_id", referencedColumnName = "bookDataId", nullable = false)
     BookData bookData;
 }

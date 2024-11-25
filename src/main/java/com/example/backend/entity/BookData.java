@@ -18,6 +18,7 @@ import java.util.UUID;
 public class BookData {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(nullable = false, unique = true)
     String bookDataId;
     String name;
     String slug;
@@ -25,7 +26,6 @@ public class BookData {
     String thumbUrl;
     boolean subDocQuyen;
 
-    // tạo quan hệ với bản comment
     @OneToMany(mappedBy = "bookData", cascade = CascadeType.ALL, orphanRemoval = true)
     List<Comment> comments;
 
@@ -48,10 +48,9 @@ public class BookData {
         updatedAt = LocalDateTime.now();
     }
 
-    // Many-to-One relationship with User (creator of the book)
     @ManyToOne
-    @JoinColumn(name = "user_id") // This column will store the reference to the user
-            User user;
+    @JoinColumn(name = "user_id")
+    User user;
 
     @PreUpdate
     protected void onUpdate() {

@@ -14,12 +14,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReadingBookCaseResponse {
-    long id;
+    String id;
     String bookDataId;
     String uid;
     String chapterName;
     LocalDateTime readingDate;
     double positionReading;
-    // Thêm BookData
     BookData bookData;
 }

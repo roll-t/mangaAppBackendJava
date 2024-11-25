@@ -1,11 +1,14 @@
 package com.example.backend.controller;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import com.example.backend.dto.request.ApiResponse;
 import com.example.backend.dto.request.UserCreationRequest;
 import com.example.backend.dto.request.UserUpdateRequest;
 import com.example.backend.dto.response.UserResponse;
+import com.example.backend.repository.UserRepository;
 import com.example.backend.service.UserService;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -25,9 +28,9 @@ import jakarta.validation.Valid;
 @Data
 @CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
-
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     UserService userService;
+    UserRepository userRepository;
 
     @PostMapping
     public ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
@@ -41,7 +44,6 @@ public class UserController {
         try {
             var authentication = SecurityContextHolder.getContext().getAuthentication();
             authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
-
             List<UserResponse> users = userService.getUsers();
             return ApiResponse.<List<UserResponse>>builder()
                     .result(users)
@@ -57,7 +59,6 @@ public class UserController {
 
     @GetMapping("/{uid}")
     public ApiResponse<UserResponse> getUserById(@PathVariable("uid") String uid) {
-        System.out.print("=====================================================");
         return ApiResponse.<UserResponse>builder()
                 .result(userService.getUserById(uid))
                 .build();
@@ -78,6 +79,39 @@ public class UserController {
                 .build();
     }
 
+    @GetMapping("/statistics/monthly")
+    public ApiResponse<List<UserResponse>> getUserStatisticsMonthly() {
+        try {
+            List<UserResponse> statistics = userService.getUserStatisticsMonthly();
+            return ApiResponse.<List<UserResponse>>builder()
+                    .result(statistics)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error fetching monthly user statistics", e);
+            return ApiResponse.<List<UserResponse>>builder()
+                    .code(1)
+                    .message("Error fetching monthly user statistics")
+                    .build();
+        }
+    }
+
+
+    @GetMapping("/statistics/weekly")
+    public ApiResponse<List<UserResponse>> getUserStatisticsWeekly() {
+        try {
+            List<UserResponse> statistics = userService.getUserStatisticsWeekly();
+            return ApiResponse.<List<UserResponse>>builder()
+                    .result(statistics)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error fetching weekly user statistics", e);
+            return ApiResponse.<List<UserResponse>>builder()
+                    .code(1)
+                    .message("Error fetching weekly user statistics")
+                    .build();
+        }
+    }
+
 
     @PutMapping("/{uid}")
     public ApiResponse<UserResponse> updateUser(@PathVariable("uid") String uid, @RequestBody UserUpdateRequest request) {
@@ -96,6 +130,86 @@ public class UserController {
         } catch (Exception e) {
             return ApiResponse.<String>builder()
                     .result("Delete failed: error " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @GetMapping("/permissions/{permission}")
+    public ApiResponse<List<UserResponse>> getUsersByPermission(@PathVariable("permission") String permission) {
+        try {
+            List<UserResponse> users = userService.getUsersByPermission(permission);
+            return ApiResponse.<List<UserResponse>>builder()
+                    .result(users)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error fetching users by permission", e);
+            return ApiResponse.<List<UserResponse>>builder()
+                    .code(1) // Assuming a non-zero code indicates an error
+                    .message("Error fetching users by permission")
+                    .build();
+        }
+    }
+
+    @GetMapping("/roles/{role}")
+    public ApiResponse<List<UserResponse>> getUsersByRole(@PathVariable("role") String role) {
+        List<UserResponse> users = userService.getUsersByRole(role);
+        return ApiResponse.<List<UserResponse>>builder()
+                .result(users)
+                .build();
+    }
+
+    @GetMapping("/statistics/monthly/count")
+    public ApiResponse<Integer> getUserCountMonthly() {
+        try {
+            int count = userService.getUserCountMonthly();
+            return ApiResponse.<Integer>builder()
+                    .result(count)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error fetching monthly user count", e);
+            return ApiResponse.<Integer>builder()
+                    .code(1)
+                    .message("Error fetching monthly user count")
+                    .build();
+        }
+    }
+
+    @GetMapping("/weekly-growth-percentage")
+    public ApiResponse<Double> getWeeklyGrowthPercentageBasedOnTotal() {
+        double growthPercentage = userService.calculateWeeklyGrowthPercentageBasedOnTotal();
+        return ApiResponse.<Double>builder()
+                .result(growthPercentage)
+                .build();
+    }
+
+    @GetMapping("/statistics/weekly-growth")
+    public ApiResponse<Double> getWeeklyGrowthPercentage() {
+        try {
+            double growthPercentage = userService.calculateWeeklyGrowthPercentage();
+            return ApiResponse.<Double>builder()
+                    .result(growthPercentage)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error calculating weekly growth percentage", e);
+            return ApiResponse.<Double>builder()
+                    .code(1)
+                    .message("Error calculating weekly growth percentage")
+                    .build();
+        }
+    }
+
+    @GetMapping("/statistics/monthly-growth")
+    public ApiResponse<Double> getMonthlyGrowthPercentage() {
+        try {
+            double growthPercentage = userService.calculateMonthlyGrowthPercentage();
+            return ApiResponse.<Double>builder()
+                    .result(growthPercentage)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error calculating monthly growth percentage", e);
+            return ApiResponse.<Double>builder()
+                    .code(1)
+                    .message("Error calculating monthly growth percentage")
                     .build();
         }
     }

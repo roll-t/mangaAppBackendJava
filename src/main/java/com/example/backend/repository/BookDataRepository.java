@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookDataRepository extends JpaRepository<BookData, String> {
@@ -14,4 +15,7 @@ public interface BookDataRepository extends JpaRepository<BookData, String> {
     Page<BookData> findByCategorySlugAndStatus(@Param("categorySlug") String categorySlug,
                                                @Param("status") String status,
                                                Pageable pageable);
+
+    // Đếm số lượng sách được tạo ra sau thời gian cụ thể
+    long countByCreatedAtAfter(LocalDateTime createdAt);
 }

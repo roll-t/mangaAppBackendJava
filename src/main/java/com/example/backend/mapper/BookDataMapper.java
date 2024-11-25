@@ -18,6 +18,7 @@ public interface BookDataMapper {
 
     BookData toBookData(BookDataRequest bookDataRequest);
 
+    @Mapping(target = "userId", source = "user.uid")
     @Mapping(target = "categorySlug", source = "category", qualifiedByName = "categoriesToSlugs")
     BookDataResponse toBookDataResponse(BookData bookData);
 

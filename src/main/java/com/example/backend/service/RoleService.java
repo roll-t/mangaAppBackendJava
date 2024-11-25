@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +43,22 @@ public class RoleService {
         var roles = roleRepository.findAll();
         return roles.stream().map(roleMapper::toRoleResponse).toList();
     }
+
+    public RoleResponse getRoleById(String id) {
+        Optional<Role> role = roleRepository.findById(id);
+        return role.map(roleMapper::toRoleResponse).orElse(null);
+    }
+
+    public RoleResponse updateRole(String id, RoleRequest request) {
+        Role role = roleRepository.findById(id).orElseThrow(() -> new RuntimeException("Role not found"));
+        role.setName(request.getName());
+        role.setDescription(request.getDescription());
+        var permissions = permissionRepository.findAllById(request.getPermissions());
+        role.setPermissions(new HashSet<>(permissions));
+        roleRepository.save(role);
+        return roleMapper.toRoleResponse(role);
+    }
+
 
     public void deleteRole(String role) {
         roleRepository.deleteById(role);

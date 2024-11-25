@@ -12,4 +12,5 @@ public class CommentResponse {
     private UserResponse user;
     private String content;
     private LocalDateTime createdAt;
+    private ChapterResponse chapter;
 }
