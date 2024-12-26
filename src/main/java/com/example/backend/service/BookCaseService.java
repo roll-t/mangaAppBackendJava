@@ -60,9 +60,9 @@ public class BookCaseService {
 
     public List<ReadingBookCaseResponse> getAllReadingBooksByUserId(String userId) {
         List<ReadingBookCase> readingBooks = readingBookCaseRepository.findByUser_Uid(userId);
-        // Map without including comments
         return readingBooks.stream()
-                .map(readingBookCaseMapper::toReadingBookCaseResponseWithoutComments) // Use the MapStruct method
+                .sorted((a, b) -> b.getReadingDate().compareTo(a.getReadingDate())) // Sắp xếp giảm dần theo thời gian đọc gần nhất
+                .map(readingBookCaseMapper::toReadingBookCaseResponseWithoutComments) // Sử dụng phương thức MapStruct
                 .collect(Collectors.toList());
     }
 

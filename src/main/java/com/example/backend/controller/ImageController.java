@@ -48,7 +48,7 @@ public class ImageController {
     @DeleteMapping("/delete/{publicId}")
     public String deleteImage(@PathVariable("publicId") String publicId) {
         try {
-            cloudinaryService.deleteImage(publicId.replace("-","/"));
+            cloudinaryService.deleteImage(publicId.replace("-", "/"));
             return "Image deleted successfully";
         } catch (IOException e) {
             e.printStackTrace();

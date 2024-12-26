@@ -19,6 +19,7 @@ import java.util.UUID;
 public class User {
 
     @Id
+    @Column(nullable = false, unique = true)
     String uid;
     String displayName;
     String email;
@@ -27,7 +28,7 @@ public class User {
     LocalDateTime creationTime;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore // Ngăn chặn vòng lặp vô hạn
+    @JsonIgnore
     List<Comment> comments;
 
     @ManyToMany

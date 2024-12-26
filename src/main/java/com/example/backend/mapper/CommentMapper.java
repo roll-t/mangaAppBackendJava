@@ -18,6 +18,5 @@ public interface CommentMapper {
     @Mapping(target = "bookData", ignore = true)
     Comment toComment(CommentComicRequest request);
 
-
     Comment toEntity(CommentRequest request);
 }

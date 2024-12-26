@@ -49,6 +49,20 @@ public class CommentController {
         return ApiResponse.<Boolean>builder().result(isUpdated).build();
     }
 
+
+    @GetMapping("/chapter/{chapterId}")
+    public ApiResponse<List<CommentResponse>> getCommentsByChapterId(
+            @PathVariable String chapterId,
+            @RequestParam(defaultValue = "0") int page) {
+        try {
+            List<CommentResponse> comments = commentService.getCommentsByChapterId(chapterId, page);
+            return ApiResponse.<List<CommentResponse>>builder().result(comments).build();
+        } catch (RuntimeException e) {
+            return ApiResponse.<List<CommentResponse>>builder().message(e.getMessage()).build();
+        }
+    }
+
+
     @DeleteMapping("/{commentId}")
     public ApiResponse<Boolean> deleteComment(@PathVariable String commentId) {
         boolean isDeleted = commentService.deleteComment(commentId);

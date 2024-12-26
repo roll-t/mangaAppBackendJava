@@ -26,8 +26,5 @@ public class UserUpdateRequest {
 
     String photoURL;
 
-    @PhoneValid(message = "PHONE_VALID_FORMAT")
-    String phoneNumber;
-
     List<String> roles;
 }

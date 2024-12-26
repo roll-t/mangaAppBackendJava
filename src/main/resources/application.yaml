@@ -12,10 +12,9 @@ spring:
     password: 6OunUb}U?vqd
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto:  update
     show-sql: true
     properties:
       hibernate:
