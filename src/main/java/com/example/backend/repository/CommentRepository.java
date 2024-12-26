@@ -10,4 +10,6 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, String> {
     Page<Comment> findByBookDataBookDataIdOrderByCreatedAtDesc(String bookDataId, Pageable pageable);//Lấy danh sách comment theo cuốn sách
+    Page<Comment> findByChapterChapterIdOrderByCreatedAtDesc(String chapterId, Pageable pageable);
+
 }

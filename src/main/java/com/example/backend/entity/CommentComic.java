@@ -22,7 +22,7 @@ public class CommentComic {
     String comicId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "uid", nullable = false)
     User user; // The user who created the comment
 
     String content; // The content of the comment

@@ -11,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 import org.w3c.dom.Text;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -21,6 +22,6 @@ public class ChapterResponse {
     String chapterName;
     String chapterTitle;
     String chapterContent;
-    LocalDate createAt;
+    LocalDateTime createAt;
     String bookDataId;
 }

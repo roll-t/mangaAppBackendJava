@@ -16,6 +16,7 @@ import java.util.List;
 @RequestMapping("/roles")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Data
+@CrossOrigin(origins = "http://localhost:3000")
 public class RoleController {
 
     RoleService roleService;
@@ -31,6 +32,21 @@ public class RoleController {
     ApiResponse<List<RoleResponse>> getAll() {
         return ApiResponse.<List<RoleResponse>>builder()
                 .result(roleService.getAllRoles())
+                .build();
+    }
+
+
+    @GetMapping("/{id}")
+    ApiResponse<RoleResponse> getById(@PathVariable String id) {
+        return ApiResponse.<RoleResponse>builder()
+                .result(roleService.getRoleById(id))
+                .build();
+    }
+
+    @PutMapping("/{id}")
+    ApiResponse<RoleResponse> updateRole(@PathVariable String id, @RequestBody RoleRequest request) {
+        return ApiResponse.<RoleResponse>builder()
+                .result(roleService.updateRole(id, request))
                 .build();
     }
 

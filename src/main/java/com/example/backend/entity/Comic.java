@@ -16,7 +16,7 @@ import java.util.List;
 @Data
 public class Comic {
     @Id
-    long id;
+    String id;
     String title;
     String description;
     String thumb;

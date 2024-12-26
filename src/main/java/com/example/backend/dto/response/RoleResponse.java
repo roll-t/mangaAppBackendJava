@@ -3,6 +3,7 @@ package com.example.backend.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -14,5 +15,5 @@ public class RoleResponse {
     String name;
     String description;
 
-    Set<PermissionResponse> permissions;
+    List<PermissionResponse> permissions;
 }

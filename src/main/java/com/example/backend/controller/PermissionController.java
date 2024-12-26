@@ -15,6 +15,7 @@ import java.util.List;
 @RequestMapping("/permissions")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Data
+@CrossOrigin(origins = "http://localhost:3000")
 public class PermissionController {
     PermissionService permissionService;
 
