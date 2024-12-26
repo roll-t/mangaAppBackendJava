@@ -2,7 +2,9 @@ package com.example.backend.service;
 
 import com.example.backend.dto.request.BookDataRequest;
 import com.example.backend.dto.request.BookUpdateRequest;
+import com.example.backend.dto.response.AuthorBookCountDTO;
 import com.example.backend.dto.response.BookDataResponse;
+import com.example.backend.dto.response.TopAuthResponse;
 import com.example.backend.entity.BookData;
 import com.example.backend.entity.Category;
 import com.example.backend.entity.User;
@@ -217,20 +219,36 @@ public class BookDataService {
                 .collect(Collectors.toList());
     }
 
-    // Tính phần trăm tăng trưởng sách trong tuần
     public double calculateWeeklyGrowthPercentage() {
-        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
-        long booksLastWeek = bookDataRepository.countByCreatedAtAfter(oneWeekAgo);
+        // Xác định thời gian của tuần trước
+        LocalDateTime startOfLastWeek = LocalDateTime.now()
+                .minusWeeks(1)  // Lùi lại 1 tuần so với hôm nay
+                .with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)) // Đảm bảo là thứ Hai của tuần trước
+                .toLocalDate().atStartOfDay();
+        LocalDateTime endOfLastWeek = startOfLastWeek.plusDays(6);  // Chủ Nhật của tuần trước
 
-        LocalDateTime twoWeeksAgo = LocalDateTime.now().minusWeeks(2);
-        long booksTwoWeeksAgo = bookDataRepository.countByCreatedAtAfter(twoWeeksAgo);
+        // Xác định thời gian của tuần này (tính từ ngày hôm nay)
+        LocalDateTime startOfThisWeek = LocalDateTime.now()
+                .with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))  // Đảm bảo là thứ Hai của tuần này
+                 .toLocalDate().atStartOfDay();
+        LocalDateTime endOfThisWeek = startOfThisWeek.plusDays(6);  // Chủ Nhật của tuần này
 
-        if (booksTwoWeeksAgo == 0) {
-            return 0;  // Nếu không có sách được tạo trong 2 tuần trước, tránh chia cho 0
+        long booksLastWeek = bookDataRepository.countByCreatedAtBetween(startOfLastWeek, endOfLastWeek);
+        long booksThisWeek = bookDataRepository.countByCreatedAtBetween(startOfThisWeek, LocalDateTime.now());
+
+        if (booksLastWeek == 0) {
+            System.out.println("No books created in the last week. Returning growth percentage of 0.");
+            return 0;
         }
 
-        return ((double) booksLastWeek - booksTwoWeeksAgo) / booksTwoWeeksAgo * 100;
+        double growthPercentage = ((double) booksThisWeek - booksLastWeek) / booksLastWeek * 100;
+
+        System.out.println("Growth Percentage: " + growthPercentage);
+
+        return growthPercentage;
     }
+
+
 
     // Tính phần trăm tăng trưởng sách trong tháng
     public double calculateMonthlyGrowthPercentage() {
@@ -263,12 +281,33 @@ public class BookDataService {
     public double calculateWeeklyGrowthPercentageOnBase() {
         long totalBooks = getTotalBooksCount();  // Lấy tổng số sách
         if (totalBooks == 0) {
-            return 0; // Tránh chia cho 0 nếu không có sách nào
+             return 0; // Tránh chia cho 0 nếu không có sách nào
         }
 
         long booksThisWeek = getBooksCreatedThisWeek();  // Lấy số sách tạo mới trong tuần
-
-        // Tính phần trăm tăng trưởng sách trong tuần so với tổng số sách
+        System.out.print(booksThisWeek);
+        System.out.print(totalBooks);
         return ((double) booksThisWeek / totalBooks) * 100;
+    }
+
+    public List<BookDataResponse> getBooksCreatedInCustomWeek(LocalDateTime startDate, LocalDateTime endDate) {
+        return bookDataRepository.findAll().stream()
+                .filter(bookData ->
+                        (bookData.getCreatedAt().isEqual(startDate) || bookData.getCreatedAt().isAfter(startDate)) &&
+                                (bookData.getCreatedAt().isEqual(endDate) || bookData.getCreatedAt().isBefore(endDate))
+                )
+                .map(bookDataMapper::toBookDataResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<TopAuthResponse> getTopAuthorsWithMostBooks() {
+        Pageable pageable = PageRequest.of(0, 10);
+        List<AuthorBookCountDTO> results = bookDataRepository.findTopAuthorsWithMostBooks(pageable);
+        return results.stream()
+                .map(dto -> {
+                    User user = userRepository.findById(dto.getUserId()).orElse(null); // Tìm thông tin User từ ID
+                    return new TopAuthResponse(user, dto.getBookCount());
+                })
+                .collect(Collectors.toList());
     }
 }

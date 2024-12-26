@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import com.example.backend.dto.request.UserCreationRequest;
 import com.example.backend.dto.request.UserUpdateRequest;
+import com.example.backend.dto.response.TopAuthResponse;
 import com.example.backend.dto.response.UserResponse;
 import com.example.backend.entity.Role;
 import com.example.backend.entity.User;
@@ -22,6 +23,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -214,24 +217,32 @@ public class UserService {
 
     // tỉ lệ tăng thêm trong tuần
     public double calculateWeeklyGrowthPercentage() {
-        // Xác định khoảng thời gian tuần hiện tại và tuần trước
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime startOfCurrentWeek = now.minus(7, ChronoUnit.DAYS);
-        LocalDateTime startOfPreviousWeek = startOfCurrentWeek.minus(7, ChronoUnit.DAYS);
+        // Xác định thời gian của tuần trước
+        LocalDateTime startOfLastWeek = LocalDateTime.now()
+                .minusWeeks(1)  // Lùi lại 1 tuần
+                .with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)) // Thứ Hai của tuần trước
+                .toLocalDate().atStartOfDay();
+        LocalDateTime endOfLastWeek = startOfLastWeek.plusDays(6);  // Chủ Nhật của tuần trước
 
-        // Lấy số lượng người dùng mới theo tuần hiện tại và tuần trước
-        int currentWeekCount = userRepository.countUsersCreatedBetween(startOfCurrentWeek, now);
-        int previousWeekCount = userRepository.countUsersCreatedBetween(startOfPreviousWeek, startOfCurrentWeek);
+        // Xác định thời gian của tuần này
+        LocalDateTime startOfThisWeek = LocalDateTime.now()
+                .with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY))  // Thứ Hai của tuần này
+                .toLocalDate().atStartOfDay();
+        LocalDateTime endOfThisWeek = startOfThisWeek.plusDays(6);  // Chủ Nhật của tuần này
 
-        // Xử lý các trường hợp đặc biệt
-        if (previousWeekCount == 0) {
-            // Nếu không có người dùng trong tuần trước, tỷ lệ tăng là 100% nếu tuần hiện tại có người dùng
-            return currentWeekCount > 0 ? 100.0 : 0.0;
+        // Đếm số người dùng tạo trong tuần trước và tuần này
+        long usersLastWeek = userRepository.countUsersCreatedBetween(startOfLastWeek, endOfLastWeek);
+        long usersThisWeek = userRepository.countUsersCreatedBetween(startOfThisWeek, LocalDateTime.now());
+
+        // Tính phần trăm tăng trưởng
+        if (usersLastWeek == 0) {
+            return 0;
         }
 
-        // Tính toán tỷ lệ phần trăm tăng trưởng
-        return ((double) (currentWeekCount - previousWeekCount) / previousWeekCount) * 100;
+        double growthPercentage = ((double) usersThisWeek - usersLastWeek) / usersLastWeek * 100;
+        return growthPercentage;
     }
+
 
     public double calculateWeeklyGrowthPercentageBasedOnTotal() {
         // Lấy thời gian bắt đầu tuần hiện tại
@@ -274,4 +285,17 @@ public class UserService {
         return ((double) (currentMonthCount - previousMonthCount) / previousMonthCount) * 100;
     }
 
+    public List<TopAuthResponse> getTop10UsersWithMostBooks() {
+        Pageable pageable = PageRequest.of(0, 10); // Lấy 10 kết quả đầu tiên
+
+        List<User> results = userRepository.findTop10UsersWithMostBooks(pageable).getContent();
+
+        return results.stream()
+                .map(user -> {
+                    // Đếm số sách của tác giả
+                    long bookCount =(long) user.getBooks().size();
+                    return new TopAuthResponse(user, bookCount);
+                })
+                .collect(Collectors.toList());
+    }
 }

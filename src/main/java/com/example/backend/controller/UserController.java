@@ -7,7 +7,9 @@ import java.util.List;
 import com.example.backend.dto.request.ApiResponse;
 import com.example.backend.dto.request.UserCreationRequest;
 import com.example.backend.dto.request.UserUpdateRequest;
+import com.example.backend.dto.response.TopAuthResponse;
 import com.example.backend.dto.response.UserResponse;
+import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.service.UserService;
 import lombok.AccessLevel;
@@ -212,5 +214,10 @@ public class UserController {
                     .message("Error calculating monthly growth percentage")
                     .build();
         }
+    }
+
+    @GetMapping("/top-authors")
+    public List<TopAuthResponse> getTop10AuthorsWithMostBooks() {
+        return userService.getTop10UsersWithMostBooks();
     }
 }

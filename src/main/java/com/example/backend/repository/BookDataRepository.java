@@ -1,5 +1,6 @@
 package com.example.backend.repository;
 
+import com.example.backend.dto.response.AuthorBookCountDTO;
 import com.example.backend.entity.BookData;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,16 @@ public interface BookDataRepository extends JpaRepository<BookData, String> {
                                                @Param("status") String status,
                                                Pageable pageable);
 
-    // Đếm số lượng sách được tạo ra sau thời gian cụ thể
     long countByCreatedAtAfter(LocalDateTime createdAt);
+
+    // Trong repository
+    long countByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
+
+
+    @Query("SELECT new com.example.backend.dto.response.AuthorBookCountDTO(b.user.uid, COUNT(b)) " +
+            "FROM BookData b " +
+            "GROUP BY b.user.uid " +
+            "ORDER BY COUNT(b) DESC")
+    List<AuthorBookCountDTO> findTopAuthorsWithMostBooks(Pageable pageable);
+
 }

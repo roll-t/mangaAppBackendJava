@@ -5,6 +5,7 @@ import com.example.backend.dto.request.ApiResponse;
 import com.example.backend.dto.request.BookDataRequest;
 import com.example.backend.dto.request.BookUpdateRequest;
 import com.example.backend.dto.response.BookDataResponse;
+import com.example.backend.dto.response.TopAuthResponse;
 import com.example.backend.service.BookDataService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -12,6 +13,7 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -158,7 +160,7 @@ public class BookDataController {
         List<BookDataResponse> books = bookDataService.findByCategoryAndStatus(categorySlug, status, page, size);
         return ApiResponse.<List<BookDataResponse>>builder().result(books).build();
     }
-    
+
     @GetMapping("/slugs")
     public ApiResponse<List<BookDataResponse>> getBooksBySlugs(@RequestParam List<String> slugs) {
         List<BookDataResponse> books = bookDataService.findBySlugs(slugs);
@@ -213,5 +215,27 @@ public class BookDataController {
         }
     }
 
+
+    @GetMapping("/custom-week")
+    public ApiResponse<List<BookDataResponse>> getBooksCreatedInCustomWeek(
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate) {
+
+        LocalDateTime start = LocalDateTime.parse(startDate);
+        LocalDateTime end = LocalDateTime.parse(endDate);
+
+        List<BookDataResponse> books = bookDataService.getBooksCreatedInCustomWeek(start, end);
+        return ApiResponse.<List<BookDataResponse>>builder()
+                .result(books)
+                .build();
+    }
+
+    @GetMapping("/top-author")
+    public ApiResponse<List<TopAuthResponse>> getTopAuthors() {
+        List<TopAuthResponse> topAuthors = bookDataService.getTopAuthorsWithMostBooks();
+        return ApiResponse.<List<TopAuthResponse>>builder()
+                .result(topAuthors)
+                .build();
+    }
 
 }
