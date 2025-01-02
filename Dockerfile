@@ -20,7 +20,7 @@ WORKDIR /app
 COPY --from=build /app/target/DrComputer-0.0.1-SNAPSHOT.war drcomputer.war
 
 # Expose the application on port 8080
-EXPOSE 8080c
+EXPOSE 8080
 
 # Set the command to run the application
 ENTRYPOINT ["java", "-jar", "drcomputer.war"]
