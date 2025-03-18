@@ -9,16 +9,16 @@ spring:
   datasource:
     url: jdbc:mysql://103.200.23.139:3306/phamphu2_bookara
     username: phamphu2_bookara
-    password: 6OunUb}U?vqd
+    password: 11172002dZ#
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto:  update
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MariaDBDialect
+        dialect: org.hibernate.dialect.MySQL8Dialect
 api:
   comic:
     url: "https://otruyenapi.com/v1/api/"
